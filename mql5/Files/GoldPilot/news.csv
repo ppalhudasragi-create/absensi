@@ -1,0 +1,9 @@
+# waktu_utc,currency,impact,judul
+# Format waktu: YYYY.MM.DD HH:MM (UTC). Hanya baris USD + high yang dipakai.
+# Salin file ini ke: <Data Folder Terminal>\..\Common\Files\GoldPilot\news.csv
+# Untuk backtest isi dengan histori berita high-impact USD pada periode yang diuji.
+2025.01.10 13:30,USD,high,Non-Farm Payrolls
+2025.01.15 13:30,USD,high,CPI m/m
+2025.01.29 19:00,USD,high,FOMC Statement & Federal Funds Rate
+2025.01.30 13:30,USD,high,Advance GDP q/q
+2025.01.31 13:30,USD,high,Core PCE Price Index m/m
