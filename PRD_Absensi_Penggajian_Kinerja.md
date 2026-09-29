@@ -6,7 +6,7 @@
 | Item | Keterangan |
 |---|---|
 | Pemilik produk | Nanang (Admin / Owner) |
-| Versi dokumen | 1.1 (keputusan owner dimasukkan + fitur Tugas & Share Grup) |
+| Versi dokumen | 1.2 (semua keputusan owner final; jam kerja, periode gaji & batas libur per hari dapat diatur) |
 | Tanggal | 29 September 2026 |
 | Status | Draft untuk pengembangan |
 
@@ -102,7 +102,7 @@ Semua teks antarmuka dalam **Bahasa Indonesia**, format uang **Rupiah (Rp 1.234.
 - **Lokasi kantor:** latitude, longitude, nama lokasi. Tombol **"Ambil Lokasi Saya"** mengisi koordinat dari browser admin saat berada di kantor; tampilkan pratinjau peta (Leaflet + OpenStreetMap).
 - **Radius valid:** default **100 meter** (bisa diubah, min 20 m, maks 1000 m).
 - **Batas akurasi GPS:** default 100 m — jika `accuracy` dari browser lebih besar dari ini, minta karyawan mencoba lagi di area terbuka.
-- **Jam kerja standar:** jam masuk (mis. 08:00), jam pulang (mis. 17:00), toleransi terlambat (mis. 15 menit).
+- **Jam kerja standar (diatur di Pengaturan):** jam masuk (default 08:00), jam pulang (default 17:00), toleransi terlambat (default 15 menit). Perubahan berlaku mulai hari berikutnya; absensi yang sudah tercatat tidak dihitung ulang.
 - **Jendela absensi:** clock-in diizinkan mulai 07:00, clock-out paling lambat 23:59 (bisa diatur).
 - **Hari kerja:** **setiap hari (Senin–Minggu)**. Tidak ada hari libur tetap mingguan — libur diatur lewat **jatah libur pribadi** (Bagian 5.5).
 - **Libur bersama (opsional):** kalender tanggal di mana semua karyawan libur (mis. Idul Fitri). Tidak mengurangi jatah libur pribadi.
@@ -135,8 +135,8 @@ Kantor beroperasi setiap hari; tiap karyawan/teknisi **memilih sendiri hari libu
 - Halaman **"Jadwal Libur Saya"** berupa kalender bulan. Karyawan tap tanggal untuk menandai libur, maksimal sesuai **jatah libur** (default **4 hari/bulan**). Sisa jatah tampil jelas: *"Sisa libur bulan ini: 2 dari 4"*.
 - Libur bisa dipilih untuk bulan berjalan dan bulan depan, paling lambat **H-1** (tidak bisa memilih/membatalkan hari ini atau tanggal yang sudah lewat).
 - Tidak perlu persetujuan admin (supaya simpel), tetapi admin bisa **melihat, mengubah, atau membatalkan** libur siapa pun.
-- Pengaturan admin (opsional): **maksimal karyawan libur di hari yang sama** (default 0 = tanpa batas). Jika penuh, tanggal tampil abu-abu "Kuota hari ini penuh".
-- Jatah yang tidak dipakai **hangus** di akhir bulan (tidak diakumulasi, tidak diuangkan).
+- **Maksimal karyawan libur di hari yang sama** diatur di Pengaturan (default 0 = tanpa batas, mis. isi 2 = maks 2 orang/hari). Jika penuh, tanggal tampil abu-abu "Kuota hari ini penuh". Libur yang sudah dipilih sebelum batas diubah tetap berlaku.
+- Jatah libur dihitung **per periode gaji** (lihat 7.1). Jatah yang tidak dipakai **hangus** di akhir periode (tidak diakumulasi, tidak diuangkan).
 - Tidak masuk di luar hari libur pribadi tanpa izin/sakit yang disetujui = **alfa (dipotong)**.
 - Admin melihat **kalender tim**: siapa libur di tanggal berapa.
 
@@ -187,8 +187,12 @@ Kantor beroperasi setiap hari; tiap karyawan/teknisi **memilih sendiri hari libu
 ## 7. Fitur 4 — Penggajian Bulanan
 
 ### 7.1 Periode
-- Periode gaji = **1 bulan kalender** (tanggal 1 s.d. akhir bulan). Opsi fase 2: periode kustom (mis. 26–25).
-- **Hari kerja efektif** = jumlah hari dalam bulan − jatah libur pribadi (4) − libur bersama. Contoh: Oktober (31 hari) → 27 hari kerja.
+- **Tanggal mulai periode diatur di Pengaturan** (1–28, default **1**):
+  - `1` → bulan kalender (1–31 Oktober).
+  - `26` → 26 September s.d. 25 Oktober, diberi label **"Oktober 2026"** (label = bulan tanggal akhir periode).
+- Periode ini dipakai konsisten untuk **gaji, jatah libur 4x, dan target**. Setiap kata "bulan" di dokumen ini berarti periode gaji.
+- Perubahan tanggal mulai hanya berlaku untuk periode yang **belum dihitung**; periode yang sudah `final` tidak berubah. Admin mendapat peringatan jika ada periode yang akan tumpang tindih/terlewat.
+- **Hari kerja efektif** = jumlah hari dalam periode − jatah libur pribadi (4) − libur bersama. Contoh: periode 31 hari → 27 hari kerja.
 
 ### 7.2 Rumus Perhitungan
 
@@ -354,7 +358,7 @@ Keterangan ikon status: ⏳ baru · 🔄 dikerjakan · ✅ selesai · ❌ batal.
 - **Gaji per periode:** daftar slip per bulan, lihat rincian komponen, dan **unduh PDF** (hanya yang sudah `final`).
 - **Tugas Saya** hari ini + tombol Mulai/Selesai/Bagikan.
 - **Sisa jatah libur** bulan ini + tombol ke kalender Jadwal Libur.
-- Estimasi gaji berjalan (opsional, bisa dimatikan admin).
+- **Estimasi gaji berjalan** (default **ON**, bisa dimatikan di Pengaturan): dihitung langsung dengan rumus 7.2 dari data periode berjalan sampai hari ini, lembur hanya yang sudah disetujui. Diberi label jelas *"Perkiraan — belum final, bisa berubah"* dan tidak bisa diunduh sebagai slip.
 
 ---
 
@@ -377,7 +381,9 @@ settings            key, value           -- office_lat, office_lng, radius_m, ma
                                          -- work_start, work_end, late_tolerance_min,
                                          -- overtime_multiplier, standard_work_days (26),
                                          -- standard_hours_per_day, default_day_off_quota (4),
-                                         -- max_off_per_day, company_name, ...
+                                         -- max_off_per_day (0 = tanpa batas),
+                                         -- payroll_start_day (1–28), show_salary_estimate,
+                                         -- company_name, ...
 holidays            id, date (unique), description          -- libur bersama
 day_offs            id, user_id, date, created_by, timestamps  -- libur pribadi
                     UNIQUE(user_id, date)
@@ -430,7 +436,7 @@ audit_logs          id, user_id, action, auditable_type, auditable_id, old_value
 ## 13. Struktur Halaman (Routes)
 
 **Karyawan:** `/login`, `/dashboard`, `/absensi` (riwayat), `/libur` (jadwal libur saya), `/tugas`, `/pengajuan` (izin/sakit/absensi manual), `/target`, `/gaji` (slip), `/profil`
-**Admin:** `/admin/dashboard`, `/admin/karyawan`, `/admin/absensi`, `/admin/pengajuan`, `/admin/lembur`, `/admin/target`, `/admin/tugas`, `/admin/gaji/{periode}`, `/admin/libur` (kalender tim + libur bersama), `/admin/pengaturan` (lokasi, jam kerja, gaji default), `/admin/audit-log`
+**Admin:** `/admin/dashboard`, `/admin/karyawan`, `/admin/absensi`, `/admin/pengajuan`, `/admin/lembur`, `/admin/target`, `/admin/tugas`, `/admin/gaji/{periode}`, `/admin/libur` (kalender tim + libur bersama), `/admin/pengaturan` (lokasi & radius, jam kerja & toleransi, periode gaji, batas libur per hari, estimasi gaji ON/OFF, gaji default), `/admin/audit-log`
 
 ---
 
@@ -456,7 +462,9 @@ audit_logs          id, user_id, action, auditable_type, auditable_id, old_value
 - [ ] Clock-in kedua di hari yang sama → ditolak.
 - [ ] Mengirim koordinat palsu langsung ke API (tanpa UI) tetap divalidasi server.
 - [ ] Hari libur pribadi / libur bersama → tidak ada tombol absensi & tidak dihitung alfa.
-- [ ] Karyawan tidak bisa memilih hari libur ke-5 dalam satu bulan (jatah 4), tidak bisa memilih hari ini/tanggal lewat.
+- [ ] Karyawan tidak bisa memilih hari libur ke-5 dalam satu periode (jatah 4), tidak bisa memilih hari ini/tanggal lewat.
+- [ ] Batas libur per hari = 2 dan sudah 2 orang libur → orang ke-3 tidak bisa memilih tanggal itu.
+- [ ] Mengubah jam masuk di Pengaturan mengubah penentuan `terlambat` mulai hari berikutnya.
 - [ ] Izin/sakit yang disetujui dan keterlambatan **tidak** memotong gaji.
 - [ ] Karyawan tanpa absensi, bukan hari liburnya, & tanpa izin → otomatis `alfa` setelah scheduler berjalan.
 - [ ] Clock-out setelah jam pulang ≥ 30 menit → lembur `pending`, masuk gaji hanya setelah disetujui.
@@ -472,6 +480,8 @@ audit_logs          id, user_id, action, auditable_type, auditable_id, old_value
 - [ ] Rekap tugas hari ini bisa disalin/dibagikan dengan jumlah status yang benar.
 
 **Gaji**
+- [ ] Tanggal mulai periode = 26 → periode "Oktober 2026" mencakup 26 Sep–25 Okt untuk gaji, jatah libur & target.
+- [ ] Karyawan melihat estimasi gaji berjalan berlabel "Perkiraan"; saat dimatikan admin, estimasi tidak tampil.
 - [ ] Contoh pada Bagian 7.3 menghasilkan total **Rp 4.471.154**.
 - [ ] Karyawan yang mulai tanggal 15 tidak dihitung alfa sebelum tanggal 15 dan gajinya diprorata.
 - [ ] Setelah finalisasi, mengubah gaji pokok karyawan **tidak** mengubah slip bulan yang sudah final.
@@ -493,9 +503,9 @@ audit_logs          id, user_id, action, auditable_type, auditable_id, old_value
 | 4 | Bonus target | **Setiap target yang tercapai** mendapat bonus |
 | 5 | Selfie | **Tidak perlu**, cukup GPS |
 | 6 | Tugas | Ditambahkan fitur **Tugas + share ke grup WhatsApp** dengan format standar (Bagian 8) |
+| 7 | Jam kerja & toleransi terlambat | **Diatur di Pengaturan** (default 08:00–17:00, toleransi 15 menit) |
+| 8 | Estimasi gaji berjalan | **Boleh dilihat karyawan** (default ON, bisa dimatikan) |
+| 9 | Periode gaji | **Diatur di Pengaturan** — tanggal mulai 1–28 (default 1 = bulan kalender) |
+| 10 | Batas karyawan libur di hari yang sama | **Diatur di Pengaturan** (default tanpa batas) |
 
-**Masih perlu dikonfirmasi:**
-1. Jam kerja standar (jam masuk & jam pulang) dan toleransi terlambat.
-2. Apakah karyawan boleh melihat estimasi gaji berjalan sebelum final?
-3. Periode gaji: bulan kalender atau tanggal tertentu (mis. 26–25)?
-4. Perlu batas jumlah karyawan yang libur di hari yang sama? (mis. maks 2 orang/hari)
+Tidak ada pertanyaan terbuka — PRD siap dikerjakan.
